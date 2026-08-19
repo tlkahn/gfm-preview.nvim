@@ -36,6 +36,7 @@ local function build_deps(opts)
     pandoc = vim.tbl_extend("force", {
       pandoc = cfg.pandoc,
       pandoc_crossref = cfg.pandoc_crossref,
+      tmp_prefix = cfg.tmp_prefix,
     }, opts.pandoc or {}),
   }
 end

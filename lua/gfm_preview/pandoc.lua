@@ -10,6 +10,7 @@ local DEFAULTS = {
   pandoc = "pandoc",
   pandoc_crossref = "pandoc-crossref",
   gfm_css = "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css",
+  tmp_prefix = "gfm_preview_",
   ---@param argv string[]
   ---@return table { code = number|"missing", stderr = string }
   run_cmd = function(argv)
@@ -28,8 +29,13 @@ local function write_file(path, content)
   f:close()
 end
 
-local function temp_dir()
-  local dir = vim.fn.tempname()
+local function temp_dir(prefix)
+  local probe = vim.fn.tempname()
+  vim.fn.delete(probe)
+  local dir = vim.fn.fnamemodify(probe, ":h")
+    .. "/"
+    .. (prefix or "gfm_preview_")
+    .. vim.fn.fnamemodify(probe, ":t")
   vim.fn.mkdir(dir, "p")
   return dir
 end
@@ -41,7 +47,7 @@ end
 function M.render(md_text, deps)
   deps = vim.tbl_extend("force", DEFAULTS, deps or {})
 
-  local dir = temp_dir()
+  local dir = temp_dir(deps.tmp_prefix)
   local md_path = dir .. "/input.md"
   local html_path = dir .. "/preview.html"
 
