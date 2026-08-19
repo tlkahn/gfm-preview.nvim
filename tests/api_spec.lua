@@ -174,4 +174,71 @@ describe("gfm_preview API", function()
     assert.is_string(opened)
     assert.matches("^file://", opened)
   end)
+
+  -- Phase 8: percent-format wiring through the API
+  local function preview_md_text(run)
+    local argv
+    local html_path = run({
+      pandoc = {
+        run_cmd = function(a)
+          argv = a
+          local f = io.open(a[12], "w")
+          f:write("out")
+          f:close()
+          return { code = 0, stderr = "" }
+        end,
+      },
+    })
+    assert.is_string(html_path)
+    for _, p in ipairs(argv) do
+      if p:match("input%.md$") then
+        local f = io.open(p, "r")
+        local text = f:read("*a")
+        f:close()
+        return text
+      end
+    end
+    return nil
+  end
+
+  it("preview_buffer extracts a python percent cell before pandoc", function()
+    vim.bo.filetype = "python"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# %% [markdown]", "# # Hello", "#", "# Body." })
+    local md = preview_md_text(function(opts)
+      return gfm.preview_buffer(opts)
+    end)
+    assert.matches("^# Hello", md)
+    assert.is_nil(md:find("# %%", 1, true))
+    vim.bo.filetype = ""
+  end)
+
+  it("preview_buffer previews raw buffer for markdown filetypes", function()
+    vim.bo.filetype = "markdown"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# %% [markdown]", "# raw md" })
+    local md = preview_md_text(function(opts)
+      return gfm.preview_buffer(opts)
+    end)
+    assert.is_not_nil(md:find("# %% [markdown]", 1, true))
+    vim.bo.filetype = ""
+  end)
+
+  it("preview_selection strips comment leaders for a python selection", function()
+    vim.bo.filetype = "python"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# %% [markdown]", "# ## Title", "# para" })
+    vim.api.nvim_buf_set_mark(0, "<", 2, 0, {})
+    vim.api.nvim_buf_set_mark(0, ">", 3, 6, {})
+    local md = preview_md_text(function(opts)
+      return gfm.preview_selection(opts)
+    end)
+    assert.matches("## Title", md)
+    assert.is_nil(md:find("# ## Title", 1, true))
+    vim.bo.filetype = ""
+  end)
+
+  it("direct preview does not auto-extract percent cells", function()
+    local md = preview_md_text(function(opts)
+      return gfm.preview("# %% [markdown]\n# x\n", opts)
+    end)
+    assert.is_not_nil(md:find("# %% [markdown]", 1, true))
+  end)
 end)

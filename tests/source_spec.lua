@@ -46,4 +46,53 @@ describe("source", function()
   it("selection_only returns nil when there is no selection", function()
     assert.is_nil(source.selection_only())
   end)
+
+  -- Phase 7: percent-format wiring
+  it("buffer_markdown keeps markdown filetypes unchanged", function()
+    vim.bo.filetype = "markdown"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# %% [markdown]", "# raw md" })
+    assert.are.equal("# %% [markdown]\n# raw md", source.buffer_markdown())
+    vim.bo.filetype = ""
+  end)
+
+  it("buffer_markdown extracts percent cells for a python buffer", function()
+    vim.bo.filetype = "python"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, {
+      "# %% [markdown]",
+      "# # Hello",
+      "#",
+      "# Body.",
+    })
+    assert.are.equal("# Hello\n\nBody.", source.buffer_markdown())
+    vim.bo.filetype = ""
+  end)
+
+  it("buffer_markdown returns original text for a python buffer with no cells", function()
+    vim.bo.filetype = "python"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "x = 1", "print(x)" })
+    assert.are.equal("x = 1\nprint(x)", source.buffer_markdown())
+    vim.bo.filetype = ""
+  end)
+
+  it("selection_markdown returns nil when nothing is selected", function()
+    assert.is_nil(source.selection_markdown())
+  end)
+
+  it("selection_markdown strips comment leaders for the selected range", function()
+    vim.bo.filetype = "python"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# %% [markdown]", "# ## Title", "# para" })
+    vim.api.nvim_buf_set_mark(0, "<", 2, 0, {})
+    vim.api.nvim_buf_set_mark(0, ">", 3, 6, {})
+    assert.are.equal("## Title\npara", source.selection_markdown())
+    vim.bo.filetype = ""
+  end)
+
+  it("selection_markdown does not strip on markdown", function()
+    vim.bo.filetype = "markdown"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# looks like comment" })
+    vim.api.nvim_buf_set_mark(0, "<", 1, 0, {})
+    vim.api.nvim_buf_set_mark(0, ">", 1, 20, {})
+    assert.are.equal("# looks like comment", source.selection_markdown())
+    vim.bo.filetype = ""
+  end)
 end)

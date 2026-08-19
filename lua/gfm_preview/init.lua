@@ -73,14 +73,14 @@ end
 ---@param opts table|nil
 ---@return string|nil
 function M.preview_buffer(opts)
-  return M.preview(source.buffer_text(), opts)
+  return M.preview(source.buffer_markdown(), opts)
 end
 
 --- Preview the current selection only.
 ---@param opts table|nil
 ---@return string|nil
 function M.preview_selection(opts)
-  local text = source.selection_only()
+  local text = source.selection_markdown()
   if not text then
     vim.notify("No text selected", vim.log.levels.WARN)
     return nil
