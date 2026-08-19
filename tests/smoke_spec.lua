@@ -1,0 +1,13 @@
+describe("gfm_preview module", function()
+  it("loads without error", function()
+    assert.has_no.errors(function()
+      require("gfm_preview")
+    end)
+  end)
+
+  it("exposes a setup function", function()
+    local ok, mod = pcall(require, "gfm_preview")
+    assert.is_true(ok)
+    assert.is_function(mod.setup)
+  end)
+end)
