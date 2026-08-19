@@ -7,7 +7,7 @@ local M = {}
 
 --- Whole buffer text (including a trailing newline when present).
 ---@return string
-local function buffer_text()
+function M.buffer_text()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   return table.concat(lines, "\n")
 end
@@ -41,7 +41,7 @@ end
 --- Visual selection if non-empty, otherwise the whole buffer.
 ---@return string
 function M.buffer_or_visual()
-  return visual_selection() or buffer_text()
+  return visual_selection() or M.buffer_text()
 end
 
 --- Visual selection only; nil when nothing is selected.
