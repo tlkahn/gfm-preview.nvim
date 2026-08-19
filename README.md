@@ -26,13 +26,16 @@ With [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 return {
-  dir = vim.fn.expand("~/Projects/gfm-preview.nvim"),
+  "tlkahn/gfm-preview.nvim",
   lazy = false,
   config = function()
     require("gfm_preview").setup()
   end,
 }
 ```
+
+For local development, point lazy at the checkout instead:
+`dir = vim.fn.expand("~/Projects/gfm-preview.nvim")`.
 
 ## Usage
 
