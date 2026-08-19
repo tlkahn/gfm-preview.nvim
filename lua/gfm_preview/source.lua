@@ -2,6 +2,7 @@
 -- selection, mirroring the Sublime plugin's selection-aware behavior.
 
 local annotation = require("gfm_preview.preprocess.annotation")
+local percent = require("gfm_preview.percent")
 
 local M = {}
 
@@ -60,6 +61,31 @@ function M.annotation_body(deps)
     return nil
   end
   return body
+end
+
+--- Whole buffer text prepared for markdown preview: percent cells extracted
+--- for non-markdown filetypes, raw text for markdown filetypes.
+---@return string
+function M.buffer_markdown()
+  return percent.prepare(M.buffer_text(), {
+    filetype = vim.bo.filetype,
+    commentstring = vim.bo.commentstring,
+    mode = "buffer",
+  })
+end
+
+--- Visual selection prepared for markdown preview, or nil when none.
+---@return string|nil
+function M.selection_markdown()
+  local text = M.selection_only()
+  if not text then
+    return nil
+  end
+  return percent.prepare(text, {
+    filetype = vim.bo.filetype,
+    commentstring = vim.bo.commentstring,
+    mode = "selection",
+  })
 end
 
 return M

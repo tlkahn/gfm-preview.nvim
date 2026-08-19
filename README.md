@@ -75,6 +75,13 @@ require("gfm_preview").setup({
 - ` ```excalidraw ` blocks (rendered by the Kroki service)
 - Obsidian-style callouts `> [!note]`, `> [!warning]`, foldable variants
   `> [!success]+`, `> [!danger]-`, custom titles, and aliases
+- Percent-format source files: non-markdown buffers (e.g. `python`, `r`,
+  `javascript`, `lua`) with jupytext-style `# %% [markdown]` cells are
+  extracted and uncommented (prefix + at most one space) before preview. Code
+  cells (`# %%` without `[markdown]`) are omitted. Markdown filetypes stay
+  raw. Selection preview strips comment leaders for the selected range only.
+  Other line-comment prefixes such as `//` and `--` are supported. Block
+  comments (`'''`, `/* */`) and `.ipynb` files are not handled.
 - Figures/tables/cross-references via pandoc-crossref
 
 ## Development
