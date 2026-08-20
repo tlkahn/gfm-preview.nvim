@@ -20,6 +20,9 @@ function M.setup(opts)
     end, { desc = "GfmPreview: preview buffer" })
     vim.keymap.set("v", cfg.keymap, function()
       M.preview_selection()
+      -- leave visual mode so the mapping visibly completes
+      local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+      vim.api.nvim_feedkeys(esc, "n", false)
     end, { desc = "GfmPreview: preview selection" })
   end
 end

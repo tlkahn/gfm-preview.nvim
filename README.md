@@ -11,6 +11,7 @@ Obsidian-style callouts. Lit annotation body preview is included.
 
 ## Requirements
 
+- Neovim >= 0.10 (uses `vim.fn.getregion`)
 - [pandoc](https://pandoc.org) with [pandoc-crossref](https://github.com/lierdakil/pandoc-crossref)
 - [d2](https://d2lang.com) (optional, for ` ```d2 ` blocks)
 - `~/bin/lit-annotation` (optional, for `:GfmPreviewAnnotation`)
@@ -46,8 +47,10 @@ For local development, point lazy at the checkout instead:
 | `:GfmPreviewAnnotation` | Preview the body of a single Lit annotation |
 
 Default keymap: `<leader>mp` (normal mode previews the buffer, visual mode
-previews the selection). `GfmPreviewSelection` and `GfmPreviewAnnotation`
-have no default keymaps.
+previews the **live** selection and then exits visual mode). From visual mode
+you can also use `:'<,'>GfmPreviewSelection` (or `:'<,'>GfmPreview` to ignore
+the range and preview the whole buffer). `GfmPreviewAnnotation` has no
+default keymap.
 
 ## Setup options
 

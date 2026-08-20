@@ -13,30 +13,48 @@ function M.buffer_text()
   return table.concat(lines, "\n")
 end
 
+local VISUAL_MODES = { v = true, V = true, ["\22"] = true }
+
+--- Text of the region between two getpos()-style positions.
+---@param start_pos table
+---@param end_pos table
+---@param vtype string "v" / "V" / "\22" (blockwise)
+---@return string
+local function region_text(start_pos, end_pos, vtype)
+  local region = vim.fn.getregion(start_pos, end_pos, { type = vtype })
+  return table.concat(region, "\n")
+end
+
 --- Last visual selection as text, or nil when there is none / it is empty.
 ---@return string|nil
 local function visual_selection()
-  local start_pos = vim.fn.getpos("'<")
-  local end_pos = vim.fn.getpos("'>")
+  local mode = vim.fn.mode()
+  if VISUAL_MODES[mode] then
+    -- LIVE: called from a visual-mode mapping; the '<' / '>' marks are stale
+    -- here, so read the region from the live visual anchors.
+    local text = region_text(vim.fn.getpos("v"), vim.fn.getpos("."), mode)
+    if text == "" then
+      return nil
+    end
+    return text
+  end
+  -- FALLBACK: after leaving visual mode (:GfmPreviewSelection, API callers).
+  local start_pos, end_pos = vim.fn.getpos("'<"), vim.fn.getpos("'>")
   if start_pos[2] == 0 or end_pos[2] == 0 then
     return nil
   end
-  local start_line, start_col = start_pos[2], start_pos[3]
-  local end_line, end_col = end_pos[2], end_pos[3]
-  if start_line == end_line and start_col == end_col then
+  if start_pos[2] == end_pos[2] and start_pos[3] == end_pos[3] then
     return nil
   end
-  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
-  if #lines == 0 then
+  local vtype = vim.fn.visualmode()
+  if vtype == "" then
+    vtype = "v"
+  end
+  local text = region_text(start_pos, end_pos, vtype)
+  if text == "" then
     return nil
   end
-  lines[1] = lines[1]:sub(start_col)
-  if #lines > 1 then
-    lines[#lines] = lines[#lines]:sub(1, end_col)
-  else
-    lines[1] = lines[1]:sub(1, end_col)
-  end
-  return table.concat(lines, "\n")
+  return text
 end
 
 --- Visual selection if non-empty, otherwise the whole buffer.
